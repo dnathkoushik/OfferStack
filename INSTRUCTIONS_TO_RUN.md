@@ -35,6 +35,18 @@ Your system currently lacks the necessary tools to run the backend:
    uvicorn app.main:app --reload
    ```
 
+### Database Migrations (New)
+After setting up the database, you must run migrations to create the tables:
+1. Ensure your virtual environment is active.
+2. Generate the first migration (if not done):
+   ```bash
+   alembic revision --autogenerate -m "Initial tables"
+   ```
+3. Apply migrations:
+   ```bash
+   alembic upgrade head
+   ```
+
 ## Using the Application Now
 You can interact with the **Frontend** immediately at [http://localhost:3000](http://localhost:3000).
 - Navigate to the **Dashboard**.

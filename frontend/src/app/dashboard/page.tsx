@@ -11,49 +11,94 @@ export default function Dashboard() {
     };
 
     return (
-        <div style={{ padding: "40px" }}>
-            <h1>Dashboard</h1>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
+        <div className="container" style={{ padding: "var(--spacing-xl) var(--spacing-md)" }}>
+            <h1 style={{ marginBottom: "var(--spacing-xl)" }}>Dashboard</h1>
+
+            <div className="grid-responsive" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))", gap: "var(--spacing-xl)" }}>
 
                 <section>
-                    <h2>Internship Prep - Resume Analysis</h2>
-                    <ResumeUpload onAnalysisComplete={handleAnalysisComplete} />
-                </section>
-
-                <section style={{ border: "1px solid #ddd", padding: "20px", borderRadius: "8px" }}>
-                    <h2>Identified Skill Gaps</h2>
-                    <p>Upload your resume to see skill gaps tailored to your target roles.</p>
-
-                    {analysisResult ? (
-                        <div>
-                            <p><strong>Analysis for:</strong> {analysisResult.extracted_data?.name}</p>
-                            <h3>Skills Found:</h3>
-                            <ul style={{ listStyle: "none", padding: 0 }}>
-                                {analysisResult.extracted_data?.skills?.map((skill: string, index: number) => (
-                                    <li key={index} style={{ marginBottom: "10px", padding: "10px", backgroundColor: "#eef" }}>
-                                        ✅ {skill}
-                                    </li>
-                                ))}
-                            </ul>
-                            <div style={{ marginTop: "10px", padding: "10px", backgroundColor: "#fff3cd", border: "1px solid #ffeeba" }}>
-                                <strong>Recommendation:</strong> Based on these skills, you should focus on Advanced Backend patterns.
-                            </div>
-                        </div>
-                    ) : (
-                        <div style={{ padding: "20px", textAlign: "center", color: "#666" }}>
-                            <em>No analysis yet. Upload a resume to begin.</em>
-                        </div>
-                    )}
-                </section>
-
-                <section style={{ gridColumn: "span 2", border: "1px solid #ddd", padding: "20px", borderRadius: "8px" }}>
-                    <h2>Your Learning Roadmap</h2>
-                    <div style={{ display: "flex", gap: "10px" }}>
-                        <div style={{ flex: 1, padding: "10px", background: "#eee" }}>Step 1: REST API Basics</div>
-                        <div style={{ flex: 1, padding: "10px", background: "#eee" }}>Step 2: Database Design</div>
-                        <div style={{ flex: 1, padding: "10px", background: "#eee" }}>Step 3: Docker Deployment</div>
+                    <div className="card" style={{ height: '100%' }}>
+                        <h2 style={{ marginBottom: "var(--spacing-lg)" }}>Resume Analysis</h2>
+                        <ResumeUpload onAnalysisComplete={handleAnalysisComplete} />
                     </div>
                 </section>
+
+                <section>
+                    <div className="card" style={{ height: '100%' }}>
+                        <h2 style={{ marginBottom: "var(--spacing-lg)" }}>Identified Skill Gaps</h2>
+                        <p style={{ marginBottom: "var(--spacing-md)" }}>Upload your resume to see skill gaps tailored to your target roles.</p>
+
+                        {analysisResult ? (
+                            <div style={{ marginTop: "var(--spacing-lg)" }}>
+                                <div style={{
+                                    padding: "var(--spacing-md)",
+                                    backgroundColor: "rgba(37, 99, 235, 0.1)",
+                                    borderRadius: "var(--radius-md)",
+                                    marginBottom: "var(--spacing-md)"
+                                }}>
+                                    <strong>Analysis for:</strong> {analysisResult.extracted_data?.name || "Unknown Candidate"}
+                                </div>
+
+                                <h3 style={{ fontSize: "1.1rem", marginBottom: "var(--spacing-md)" }}>Skills Found:</h3>
+                                <div style={{ display: "flex", flexWrap: "wrap", gap: "var(--spacing-sm)" }}>
+                                    {analysisResult.extracted_data?.skills?.map((skill: string, index: number) => (
+                                        <span key={index} style={{
+                                            padding: "4px 12px",
+                                            backgroundColor: "var(--background)",
+                                            border: "1px solid var(--border)",
+                                            borderRadius: "var(--radius-full)",
+                                            fontSize: "0.875rem"
+                                        }}>
+                                            ✅ {skill}
+                                        </span>
+                                    ))}
+                                </div>
+
+                                <div style={{
+                                    marginTop: "var(--spacing-lg)",
+                                    padding: "var(--spacing-md)",
+                                    backgroundColor: "rgba(245, 158, 11, 0.1)",
+                                    border: "1px solid rgba(245, 158, 11, 0.2)",
+                                    borderRadius: "var(--radius-md)",
+                                    color: "#92400e"
+                                }}>
+                                    <strong>Recommendation:</strong> Based on these skills, you should focus on Advanced Backend patterns.
+                                </div>
+                            </div>
+                        ) : (
+                            <div style={{
+                                padding: "var(--spacing-2xl)",
+                                textAlign: "center",
+                                color: "var(--text-muted)",
+                                border: "2px dashed var(--border)",
+                                borderRadius: "var(--radius-md)",
+                                marginTop: "var(--spacing-md)"
+                            }}>
+                                <em>No analysis yet. Upload a resume to begin.</em>
+                            </div>
+                        )}
+                    </div>
+                </section>
+
+                <section style={{ gridColumn: "1 / -1" }}>
+                    <div className="card">
+                        <h2 style={{ marginBottom: "var(--spacing-lg)" }}>Your Learning Roadmap</h2>
+                        <div className="grid-responsive" style={{ gap: "var(--spacing-md)" }}>
+                            {["REST API Basics", "Database Design", "Docker Deployment"].map((step, i) => (
+                                <div key={i} style={{
+                                    padding: "var(--spacing-lg)",
+                                    backgroundColor: "var(--background)",
+                                    borderRadius: "var(--radius-md)",
+                                    borderLeft: "4px solid var(--primary)"
+                                }}>
+                                    <h3 style={{ fontSize: "1.1rem", marginBottom: "var(--spacing-xs)" }}>Step {i + 1}</h3>
+                                    <p style={{ margin: 0 }}>{step}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+
             </div>
         </div>
     );

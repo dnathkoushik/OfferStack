@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-export default function ResumeUpload() {
+export default function ResumeUpload({ onAnalysisComplete }: { onAnalysisComplete?: (data: any) => void }) {
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
 
@@ -17,11 +17,11 @@ export default function ResumeUpload() {
 
     setUploading(true);
 
-    // Mock upload
     const formData = new FormData();
     formData.append("file", file);
 
     try {
+      // Use the local Next.js API route (which mocks the backend)
       const response = await fetch("/api/resumes/upload", { method: "POST", body: formData });
 
       if (!response.ok) {
@@ -31,11 +31,15 @@ export default function ResumeUpload() {
       const data = await response.json();
       console.log("Upload success:", data);
 
-      // await new Promise((resolve) => setTimeout(resolve, 2000)); // Mock delay
+      // Pass data to parent
+      if (onAnalysisComplete) {
+        onAnalysisComplete(data);
+      }
+
       alert("Resume uploaded successfully: " + data.filename);
     } catch (error) {
       console.error(error);
-      alert("Upload failed.");
+      alert("Upload failed. Make sure the backend is running or mock mode is enabled.");
     } finally {
       setUploading(false);
     }
@@ -58,7 +62,7 @@ export default function ResumeUpload() {
           cursor: uploading ? "not-allowed" : "pointer"
         }}
       >
-        {uploading ? "Uploading..." : "Analyze Resume"}
+        {uploading ? "Analyzing..." : "Analyze Resume"}
       </button>
     </div>
   );

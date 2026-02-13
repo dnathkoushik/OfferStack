@@ -46,23 +46,36 @@ export default function ResumeUpload({ onAnalysisComplete }: { onAnalysisComplet
   };
 
   return (
-    <div className="upload-container" style={{ padding: "20px", border: "1px dashed #ccc", borderRadius: "8px" }}>
-      <h2>Upload Resume</h2>
-      <input type="file" accept=".pdf" onChange={handleFileChange} />
+    <div className="card" style={{ maxWidth: '500px', margin: '0 auto', textAlign: 'center' }}>
+      <h2 style={{ marginBottom: 'var(--spacing-md)' }}>Upload Resume</h2>
+      <p style={{ marginBottom: 'var(--spacing-lg)' }}>Select your resume (PDF) to start the analysis.</p>
+
+      <div style={{
+        border: '2px dashed var(--border)',
+        borderRadius: 'var(--radius-md)',
+        padding: 'var(--spacing-xl)',
+        marginBottom: 'var(--spacing-lg)',
+        backgroundColor: 'var(--background)'
+      }}>
+        <input
+          type="file"
+          accept=".pdf"
+          onChange={handleFileChange}
+          style={{ width: '100%' }}
+        />
+      </div>
+
       <button
+        className={`btn btn-primary ${uploading ? 'disabled' : ''}`}
         onClick={handleUpload}
         disabled={!file || uploading}
-        style={{
-          marginTop: "10px",
-          padding: "10px 20px",
-          backgroundColor: uploading ? "#ccc" : "#0070f3",
-          color: "white",
-          border: "none",
-          borderRadius: "4px",
-          cursor: uploading ? "not-allowed" : "pointer"
-        }}
+        style={{ width: '100%', opacity: uploading ? 0.7 : 1 }}
       >
-        {uploading ? "Analyzing..." : "Analyze Resume"}
+        {uploading ? (
+          <>
+            <span style={{ marginRight: '8px' }}>⏳</span> Analyzing...
+          </>
+        ) : "Analyze Resume"}
       </button>
     </div>
   );

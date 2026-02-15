@@ -1,6 +1,7 @@
 
 import { NextResponse } from 'next/server';
 
+
 export async function POST(request: Request) {
     try {
         const formData = await request.formData();
@@ -13,19 +14,33 @@ export async function POST(request: Request) {
             );
         }
 
-        // Mock processing - wait 1 second
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Forward to Python Backend
+        const backendFormData = new FormData();
+        backendFormData.append('file', file);
+
+        const response = await fetch('http://localhost:8000/api/v1/resumes/upload', {
+            method: 'POST',
+            body: backendFormData,
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            console.error('Backend upload failed:', errorData);
+            return NextResponse.json(
+                { error: errorData.detail || 'Backend upload failed' },
+                { status: response.status }
+            );
+        }
+
+        const data = await response.json();
 
         return NextResponse.json({
-            filename: file.name,
-            message: 'File uploaded successfully (Mock)',
-            extracted_data: {
-                name: 'John Doe',
-                email: 'john@example.com',
-                skills: ['Python', 'JavaScript', 'React']
-            }
+            filename: data.filename,
+            message: data.message,
+            extracted_data: data.extracted_data
         });
     } catch (error) {
+        console.error('Upload error:', error);
         return NextResponse.json(
             { error: 'Upload failed' },
             { status: 500 }

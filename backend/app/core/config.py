@@ -11,6 +11,11 @@ class Settings(BaseSettings):
     POSTGRES_DB: str = "prepos"
     DATABASE_URL: Optional[str] = None
 
+    # JWT
+    SECRET_KEY: str = "supersecretkey" # In production, set this via env var!
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+
     class Config:
         case_sensitive = True
 

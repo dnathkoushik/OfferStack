@@ -4,50 +4,70 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.db.base_class import Base
 
-ModelType = TypeVar("ModelType", bound=Base)
-CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
-UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
+# Generic type variables
+Entity = TypeVar("Entity", bound=Base)
+CreateSchema = TypeVar("CreateSchema", bound=BaseModel)
+UpdateSchema = TypeVar("UpdateSchema", bound=BaseModel)
 
-class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
-    def __init__(self, model: Type[ModelType]):
-        self.model = model
 
-    async def get(self, db: AsyncSession, id: Any) -> Optional[ModelType]:
-        result = await db.execute(select(self.model).filter(self.model.id == id))
+class AsyncRepository(Generic[Entity, CreateSchema, UpdateSchema]):
+    """
+    Generic async repository providing basic CRUD operations.
+    """
+
+    def __init__(self, entity_model: Type[Entity]):
+        self._entity = entity_model
+
+    async def fetch_by_id(self, session: AsyncSession, obj_id: Any) -> Optional[Entity]:
+        query = select(self._entity).where(self._entity.id == obj_id)
+        result = await session.execute(query)
         return result.scalars().first()
 
-    async def get_multi(self, db: AsyncSession, skip: int = 0, limit: int = 100) -> List[ModelType]:
-        result = await db.execute(select(self.model).offset(skip).limit(limit))
+    async def fetch_all(
+        self, session: AsyncSession, offset: int = 0, max_results: int = 100
+    ) -> List[Entity]:
+        query = select(self._entity).offset(offset).limit(max_results)
+        result = await session.execute(query)
         return result.scalars().all()
 
-    async def create(self, db: AsyncSession, obj_in: CreateSchemaType) -> ModelType:
-        obj_in_data = obj_in.model_dump()
-        db_obj = self.model(**obj_in_data)
-        db.add(db_obj)
-        await db.commit()
-        await db.refresh(db_obj)
-        return db_obj
+    async def insert(self, session: AsyncSession, data: CreateSchema) -> Entity:
+        values = data.model_dump()
+        instance = self._entity(**values)
 
-    async def update(
-        self, db: AsyncSession, db_obj: ModelType, obj_in: Union[UpdateSchemaType, dict]
-    ) -> ModelType:
-        obj_data = db_obj.__dict__
-        if isinstance(obj_in, dict):
-            update_data = obj_in
+        session.add(instance)
+        await session.commit()
+        await session.refresh(instance)
+
+        return instance
+
+    async def modify(
+        self,
+        session: AsyncSession,
+        instance: Entity,
+        updates: Union[UpdateSchema, dict],
+    ) -> Entity:
+        if isinstance(updates, BaseModel):
+            update_fields = updates.model_dump(exclude_unset=True)
         else:
-            update_data = obj_in.model_dump(exclude_unset=True)
-        for field in obj_data:
-            if field in update_data:
-                setattr(db_obj, field, update_data[field])
-        db.add(db_obj)
-        await db.commit()
-        await db.refresh(db_obj)
-        return db_obj
+            update_fields = updates
 
-    async def remove(self, db: AsyncSession, id: int) -> Optional[ModelType]:
-        result = await db.execute(select(self.model).filter(self.model.id == id))
-        obj = result.scalars().first()
-        if obj:
-            await db.delete(obj)
-            await db.commit()
-        return obj
+        for attr, value in update_fields.items():
+            if hasattr(instance, attr):
+                setattr(instance, attr, value)
+
+        session.add(instance)
+        await session.commit()
+        await session.refresh(instance)
+
+        return instance
+
+    async def delete(self, session: AsyncSession, obj_id: Any) -> Optional[Entity]:
+        query = select(self._entity).where(self._entity.id == obj_id)
+        result = await session.execute(query)
+        instance = result.scalars().first()
+
+        if instance:
+            await session.delete(instance)
+            await session.commit()
+
+        return instance
